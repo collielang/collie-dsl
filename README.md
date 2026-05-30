@@ -3,7 +3,7 @@
 **牧羊犬编程语言** — 一种编译到 TypeScript 的领域特定语言。
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4+-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-81%20passed-brightgreen.svg)](https://github.com)
+[![Tests](https://img.shields.io/badge/tests-89%20passed-brightgreen.svg)](https://github.com)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 Collie 是一门静态类型的编程语言，拥有丰富的基类型系统。编译器将 Collie 源码 (`.cl`) 编译为 TypeScript 代码 (.ts)，采用纯手写递归下降 + Pratt 解析器实现，不依赖任何解析器生成工具。
@@ -134,7 +134,21 @@ for (item : items) {
 1 + 2 * 3
 
 // 比较运算: == != < > <= >=
+// Collie 的 == 等价于 TS 的 ===（严格相等，无隐式转换）
 a == b && c > d
+
+// 位运算: & | ^ ~ << >>
+number mask = a & 0xFF;
+number shifted = a << 2;
+
+// 自增自减 / 复合赋值: ++ -- += -= *= /= %=
+number x = 0;
+x++;
+x += 5;
+
+// 多路匹配: ==?
+string grade = score ==? 90: "A", 80: "B", 70: "C", "F";
+// 编译为 IIFE + if-else 链（预防 subject 重复求值）
 
 // 三元表达式
 a ? 1 : 2
@@ -212,7 +226,14 @@ collie-dsl/
 │   ├── parser/parser.test.ts  # 语法测试 (20 用例)
 │   └── integration.test.ts   # 集成测试 (20 用例)
 ├── examples/
-│   └── factorial.cl           # 阶乘示例
+│   ├── hello.cl / factorial.cl / fibonacci.cl / fizzbuzz.cl    # 经典示例
+│   ├── variables.cl       # 变量声明
+│   ├── control-flow.cl    # 控制流
+│   ├── functions.cl       # 函数 / 多返回值
+│   ├── expressions.cl     # 表达式
+│   ├── operators.cl       # 全部运算符
+│   ├── multiway-eq.cl     # ==? 多路匹配
+│   └── type-conversion.cl # 类型转换
 ├── package.json
 └── tsconfig.json
 ```
@@ -231,10 +252,10 @@ npx jest tests/parser/parser.test.ts --no-coverage
 npx jest tests/integration.test.ts --no-coverage
 ```
 
-测试覆盖：**81 个用例全部通过**:
+测试覆盖：**89 个用例全部通过**:
 - Lexer: 41 用例 (Token 生成、关键字、字面量、注释、位置追踪、错误恢复)
 - Parser: 20 用例 (变量声明、函数声明、控制流、表达式、错误恢复)
-- 集成: 20 用例 (端到端编译、完整程序、错误处理)
+- 集成: 28 用例 (端到端编译、完整程序、错误处理)
 
 ---
 
@@ -253,9 +274,10 @@ npx jest tests/integration.test.ts --no-coverage
 
 ### Parser 特性
 - 递归下降解析语句和声明
-- Pratt 解析器处理表达式 (12 级优先级)
+- Pratt 解析器处理表达式 (16 级优先级)
 - for 循环歧义消解 (C-style vs for-each 自动识别)
 - 多返回值支持 (逗号分隔 return，tuple 返回类型)
+- `==?` 多路匹配表达式 (编译为 IIFE + if-else 链)
 - 同步点错误恢复 (分号、闭合括号、语句起始关键字)
 - ErrorNode 融入 AST，优雅降级
 
@@ -270,7 +292,8 @@ npx jest tests/integration.test.ts --no-coverage
 ## 路线图
 
 - [x] Phase 1: 基础类型、变量、函数、控制流
-- [ ] Phase 2: 枚举、位运算、Tribool、Tuple
+- [x] Phase 2: 位运算 (`&` `|` `^` `~` `<<` `>>`)、`==?` 多路匹配、自增自减、复合赋值
+- [ ] Phase 2 (进行中): 枚举、Tribool、Tuple、展开运算符 `...`
 - [ ] Phase 3: 类、继承、接口、泛型
 - [ ] LSP 语言服务器
 - [ ] VS Code 插件
