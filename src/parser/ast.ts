@@ -14,6 +14,7 @@ export type SyntaxKind =
     | 'Program'
     // 声明
     | 'VariableDeclaration'
+    | 'MultiVariableDeclaration'
     | 'FunctionDeclaration'
     | 'Parameter'
     // 语句
@@ -64,6 +65,18 @@ export interface VariableDeclaration extends AstNode {
     kind: 'VariableDeclaration';
     varType: TypeAnnotation | null;  // null = var 推断
     name: Identifier;
+    initializer: Expression;
+}
+
+/**
+ * 多变量声明 (多返回值解构)
+ * number q, r = divide(10, 3);
+ * 编译为: const _tmp = divide(...); let q = _tmp[0]; let r = _tmp[1];
+ */
+export interface MultiVariableDeclaration extends AstNode {
+    kind: 'MultiVariableDeclaration';
+    varType: TypeAnnotation;         // 必须有显式类型
+    names: Identifier[];             // 至少 2 个
     initializer: Expression;
 }
 
@@ -259,6 +272,7 @@ export type TypeAnnotation = IdentifierType;
 
 export type Statement =
     | VariableDeclaration
+    | MultiVariableDeclaration
     | FunctionDeclaration
     | IfStatement
     | WhileStatement
