@@ -217,6 +217,8 @@ if (x > 0) {
         it('decimal() → new Decimal()', () => {
             const result = compile('decimal d = decimal("3.14159");');
             expect(result.success).toBe(true);
+            // 生成 import
+            expect(result.code).toContain("import { Decimal } from './decimal.ts'");
             expect(result.code).toContain('new Decimal(');
         });
 

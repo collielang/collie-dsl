@@ -100,6 +100,17 @@ function main() {
 
     // 写入输出
     fs.writeFileSync(outputFile, result.code, 'utf-8');
+
+    // 如果使用了 decimal 类型，复制运行时文件到输出目录
+    if (result.code.includes("import { Decimal } from './decimal.ts'")) {
+        const runtimeSrc = path.resolve(__dirname, 'runtime', 'decimal.ts');
+        const runtimeDest = path.join(path.dirname(path.resolve(outputFile)), 'decimal.ts');
+        if (fs.existsSync(runtimeSrc)) {
+            fs.copyFileSync(runtimeSrc, runtimeDest);
+            console.log(`Runtime copied to: ${runtimeDest}`);
+        }
+    }
+
     console.log(`\nCompilation successful!`);
     console.log(`Output written to: ${outputFile}`);
     console.log(`Generated ${result.code.split('\n').length} lines of TypeScript code.`);

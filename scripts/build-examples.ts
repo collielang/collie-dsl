@@ -63,6 +63,17 @@ function main() {
                 const lines = result.code.split('\n').length;
                 console.log(`  OK  ${file}  →  ${path.basename(outputPath)}  (${lines} lines)`);
                 passed++;
+                // 如果使用了 decimal，复制运行时
+                if (result.code.includes("import { Decimal } from './decimal.ts'")) {
+                    const runtimeDest = path.join(EXAMPLES_DIR, 'decimal.ts');
+                    if (!fs.existsSync(runtimeDest)) {
+                        fs.copyFileSync(
+                            path.resolve(__dirname, '../src/runtime/decimal.ts'),
+                            runtimeDest,
+                        );
+                        console.log(`       runtime copied → examples/decimal.ts`);
+                    }
+                }
             } else {
                 console.error(`  ERR ${file}  —  ${result.diagnostics.getErrors().length} error(s)`);
                 for (const err of result.diagnostics.getErrors()) {

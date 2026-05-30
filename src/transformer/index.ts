@@ -47,7 +47,7 @@ export class Transformer {
     private generateImports(program: Program): string {
         const needsDecimal = this.usesDecimalType(program);
         if (needsDecimal) {
-            return `import { Decimal } from './decimal';`;
+            return `import { Decimal } from './decimal.ts';`;
         }
         return '';
     }

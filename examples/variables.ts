@@ -1,4 +1,4 @@
-import { Decimal } from './decimal';
+import { Decimal } from './decimal.ts';
 
 function main() {
     let x: number = 42;
