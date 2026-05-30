@@ -3,10 +3,34 @@
   "version": "0.1.0",
   "description": "Collie DSL Compiler — compiles Collie (.cl) to TypeScript",
   "main": "dist/index.js",
+  "bin": {
+    "collie": "./dist/cli.js"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "lint": "echo 'no linter configured'"
+    "lint": "echo 'no linter configured'",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "dsl",
+    "compiler",
+    "typescript",
+    "collie",
+    "programming-language",
+    "lexer",
+    "parser"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
