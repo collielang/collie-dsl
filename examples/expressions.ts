@@ -1,0 +1,29 @@
+function main() {
+    let a: number = 10;
+    let b: number = 3;
+    let add: number = a + b;
+    let sub: number = a - b;
+    let mul: number = a * b;
+    let div: number = a / b;
+    let mod: number = a % b;
+    console.log("a + b = " + String(add));
+    console.log("a - b = " + String(sub));
+    console.log("a * b = " + String(mul));
+    console.log("a / b = " + String(div));
+    console.log("a % b = " + String(mod));
+    let eq: boolean = a == b;
+    let neq: boolean = a != b;
+    let lt: boolean = a < b;
+    let gt: boolean = a > b;
+    let le: boolean = a <= b;
+    let ge: boolean = a >= b;
+    let and: boolean = (a > 0) && (b > 0);
+    let or: boolean = (a > 100) || (b < 10);
+    let max: number = a > b ? a : b;
+    console.log("max = " + String(max));
+    let neg: number = -a;
+    let flag: boolean = true;
+    let not: boolean = !flag;
+    console.log("neg = " + String(neg));
+    console.log("not true = " + String(Boolean(not)));
+}
