@@ -84,6 +84,7 @@ export class StatementParser {
             case TokenType.SetType:
             case TokenType.MapType:
             case TokenType.BufferType:
+            case TokenType.Tuple:
                 // 需要区分: 可能的 for 循环类型标注 VS 变量声明
                 // peek: 下一个是标识符 && 下一个的下一个是 =
                 return this.tryParseVariableDeclarationOrExpression();
@@ -639,8 +640,15 @@ export class StatementParser {
     expect(expected: TokenType, message: string): Token {
         const token = this.advance();
         if (!token) {
-            return { type: TokenType.Error, lexeme: '', span: this.eofSpan(),
-                     leadingTrivia: [], trailingTrivia: [], flags: 0, errorMessage: 'EOF: ' + message };
+            return {
+                type: TokenType.Error,
+                lexeme: '',
+                span: this.eofSpan(),
+                leadingTrivia: [],
+                trailingTrivia: [],
+                flags: 0,
+                errorMessage: 'EOF: ' + message
+            };
         }
         if (token.type !== expected) {
             this.diagnostics.addError(`${message}. Expected '${expected}', got '${token.lexeme}'`, token.span);
@@ -676,16 +684,16 @@ export class StatementParser {
     }
 
     private isTypeKeyword(type: TokenType): boolean {
-        return type === TokenType.NumberType || type === TokenType.IntegerType ||
-            type === TokenType.DecimalType || type === TokenType.StringType ||
-            type === TokenType.CharType || type === TokenType.CharacterType ||
+        return type === TokenType.NumberType || type === TokenType.IntegerType || type === TokenType.DecimalType ||
+            type === TokenType.StringType || type === TokenType.CharType || type === TokenType.CharacterType ||
             type === TokenType.BoolType || type === TokenType.TriboolType ||
             type === TokenType.BitType || type === TokenType.ByteType ||
             type === TokenType.WordType || type === TokenType.DwordType ||
             type === TokenType.FloatType || type === TokenType.DoubleType ||
             type === TokenType.ObjectType || type === TokenType.None ||
             type === TokenType.ListType || type === TokenType.SetType ||
-            type === TokenType.MapType || type === TokenType.BufferType;
+            type === TokenType.MapType || type === TokenType.BufferType ||
+            type === TokenType.Tuple;
     }
 
     private spanOfBlock(statements: Statement[]): SourceSpan {

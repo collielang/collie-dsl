@@ -1,7 +1,7 @@
 import { TokenType, Token } from '../../lexer/token';
 import {
     FunctionDeclaration, Parameter, Identifier, TypeAnnotation,
-    BlockStatement, ErrorNode,
+    BlockStatement, ErrorNode, EnumDeclaration, EnumMember,
 } from '../ast';
 import { ExpressionParser } from './expressions';
 import { StatementParser } from './statements';
@@ -82,6 +82,78 @@ export class DeclarationParser {
             returnTypes,
             body,
             span: createSpan(fnToken.span.start, body.span.end),
+        };
+    }
+
+    /**
+     * 解析枚举声明:
+     * enum Identifier { Member1, Member2 = value, ... }
+     */
+    parseEnumDeclaration(): EnumDeclaration | ErrorNode {
+        const enumToken = this.advance()!; // enum
+
+        const nameToken = this.expect(TokenType.Identifier, 'Expected enum name');
+        const name: Identifier = { kind: 'Identifier', name: nameToken.lexeme, span: nameToken.span };
+
+        this.expect(TokenType.LeftBrace, "Expected '{' after enum name");
+
+        const members: EnumMember[] = [];
+        while (true) {
+            const memberToken = this.current();
+            if (!memberToken || memberToken.type === TokenType.RightBrace) break;
+            if (memberToken.type === TokenType.EOF) {
+                this.diagnostics.addError('Unclosed enum body', enumToken.span);
+                break;
+            }
+
+            if (memberToken.type !== TokenType.Identifier) {
+                this.diagnostics.addError(
+                    `Expected enum member name, got '${memberToken.lexeme}'`,
+                    memberToken.span,
+                );
+                this.advance();
+                continue;
+            }
+            this.advance(); // consume member name
+
+            const memberName: Identifier = {
+                kind: 'Identifier',
+                name: memberToken.lexeme,
+                span: memberToken.span,
+            };
+            let memberValue = null;
+
+            // 可选值: Member = expression
+            if (this.current() && this.current()!.type === TokenType.Equals) {
+                this.advance(); // skip =
+                this.exprParser.setPosition(this.pos);
+                memberValue = this.exprParser.parseExpression();
+                this.pos = this.exprParser.getPosition();
+            }
+
+            members.push({
+                kind: 'EnumMember',
+                name: memberName,
+                value: memberValue,
+                span: memberValue
+                    ? createSpan(memberToken.span.start, memberValue.span.end)
+                    : memberToken.span,
+            });
+
+            if (this.current() && this.current()!.type === TokenType.Comma) {
+                this.advance();
+            } else {
+                break;
+            }
+        }
+
+        this.expect(TokenType.RightBrace, "Expected '}' after enum members");
+
+        return {
+            kind: 'EnumDeclaration',
+            name,
+            members,
+            span: createSpan(enumToken.span.start, this.lastTokenSpan().end),
         };
     }
 
@@ -207,5 +279,14 @@ export class DeclarationParser {
             start: { offset: 0, line: 1, column: 1 },
             end: { offset: 0, line: 1, column: 1 },
         };
+    }
+
+    private lastTokenSpan(): SourceSpan {
+        for (let p = this.pos - 1; p >= 0; p--) {
+            if (this.tokens[p].type !== TokenType.Newline) {
+                return this.tokens[p].span;
+            }
+        }
+        return this.eofSpan();
     }
 }

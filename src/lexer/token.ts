@@ -239,6 +239,7 @@ function isTypeKeyword(type: TokenType): boolean {
         type === TokenType.FloatType || type === TokenType.DoubleType ||
         type === TokenType.ListType || type === TokenType.SetType ||
         type === TokenType.MapType || type === TokenType.BufferType ||
+        type === TokenType.Tuple ||
         type === TokenType.InfinityKw || type === TokenType.NaNKw;
 }
 
@@ -298,6 +299,7 @@ export function canStartExpression(type: TokenType): boolean {
         type === TokenType.Bang || type === TokenType.Minus ||
         type === TokenType.PlusPlus || type === TokenType.MinusMinus ||
         type === TokenType.Tilde ||
+        type === TokenType.Spread ||
         isTypeKeywordStart(type);
 }
 

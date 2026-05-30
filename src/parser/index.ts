@@ -58,6 +58,11 @@ export class Parser {
                 const decl = this.declParser.parseFunctionDeclaration();
                 this.stmtParser.setPosition(this.declParser.getPosition());
                 statements.push(decl);
+            } else if (token.type === TokenType.Enum) {
+                this.declParser.setPosition(this.stmtParser.getPosition());
+                const decl = this.declParser.parseEnumDeclaration();
+                this.stmtParser.setPosition(this.declParser.getPosition());
+                statements.push(decl);
             } else {
                 const stmt = this.stmtParser.parseStatement();
                 statements.push(stmt);

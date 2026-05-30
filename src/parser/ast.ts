@@ -16,6 +16,8 @@ export type SyntaxKind =
     | 'VariableDeclaration'
     | 'MultiVariableDeclaration'
     | 'FunctionDeclaration'
+    | 'EnumDeclaration'
+    | 'EnumMember'
     | 'Parameter'
     // 语句
     | 'BlockStatement'
@@ -34,6 +36,7 @@ export type SyntaxKind =
     | 'CharLiteral'
     | 'BooleanLiteral'
     | 'NullLiteral'
+    | 'UnsetLiteral'
     | 'Identifier'
     | 'BinaryExpression'
     | 'UnaryExpression'
@@ -44,6 +47,9 @@ export type SyntaxKind =
     | 'TernaryExpression'
     | 'GroupExpression'
     | 'MultiWayEqExpression'
+    | 'TupleExpression'
+    | 'TupleField'
+    | 'SpreadExpression'
     // 类型
     | 'IdentifierType'
     | 'ErrorNode'
@@ -93,6 +99,18 @@ export interface Parameter extends AstNode {
     kind: 'Parameter';
     name: Identifier;
     paramType: TypeAnnotation;
+}
+
+export interface EnumMember extends AstNode {
+    kind: 'EnumMember';
+    name: Identifier;
+    value: Expression | null;
+}
+
+export interface EnumDeclaration extends AstNode {
+    kind: 'EnumDeclaration';
+    name: Identifier;
+    members: EnumMember[];
 }
 
 // ============================================================
@@ -192,6 +210,10 @@ export interface NullLiteral extends AstNode {
     kind: 'NullLiteral';
 }
 
+export interface UnsetLiteral extends AstNode {
+    kind: 'UnsetLiteral';
+}
+
 export interface Identifier extends AstNode {
     kind: 'Identifier';
     name: string;
@@ -275,6 +297,24 @@ export interface MultiWayEqExpression extends AstNode {
     defaultCase: Expression | null;
 }
 
+// Tuple 命名元组
+export interface TupleField extends AstNode {
+    kind: 'TupleField';
+    name: Identifier;
+    value: Expression;
+}
+
+export interface TupleExpression extends AstNode {
+    kind: 'TupleExpression';
+    fields: TupleField[];
+}
+
+// Spread 展开运算符
+export interface SpreadExpression extends AstNode {
+    kind: 'SpreadExpression';
+    argument: Expression;
+}
+
 // ============================================================
 // 类型注解
 // ============================================================
@@ -294,6 +334,7 @@ export type Statement =
     | VariableDeclaration
     | MultiVariableDeclaration
     | FunctionDeclaration
+    | EnumDeclaration
     | IfStatement
     | WhileStatement
     | DoWhileStatement
@@ -312,6 +353,7 @@ export type Expression =
     | CharLiteral
     | BooleanLiteral
     | NullLiteral
+    | UnsetLiteral
     | Identifier
     | BinaryExpression
     | UnaryExpression
@@ -322,6 +364,8 @@ export type Expression =
     | TernaryExpression
     | GroupExpression
     | MultiWayEqExpression
+    | TupleExpression
+    | SpreadExpression
     | ErrorNode;
 
 // ============================================================

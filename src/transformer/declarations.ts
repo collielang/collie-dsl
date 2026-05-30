@@ -1,5 +1,6 @@
 import {
     FunctionDeclaration, Parameter, IdentifierType,
+    EnumDeclaration,
 } from '../parser/ast';
 import { mapType } from './types';
 
@@ -48,6 +49,23 @@ export class DeclarationTransformer {
         const body = this.transformStatementFn(node.body);
 
         return `${this.ind()}function ${name}(${params})${returnTypeStr} ${body}`;
+    }
+
+    /**
+     * enum Name { Member1, Member2 = value, ... }
+     */
+    transformEnumDeclaration(node: EnumDeclaration): string {
+        const ind = this.ind();
+        const members = node.members
+            .map(m => {
+                const valStr = m.value
+                    ? ` = ${this.transformExpressionFn(m.value)}`
+                    : '';
+                return `${ind}    ${m.name.name}${valStr}`;
+            })
+            .join(',\n');
+
+        return `${ind}enum ${node.name.name} {\n${members}\n${ind}}`;
     }
 
     private transformParameter(param: Parameter): string {

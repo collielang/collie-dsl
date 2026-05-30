@@ -1,10 +1,11 @@
 import { TokenType, Token, canStartExpression, isTypeToken } from '../../lexer/token';
 import {
     Expression, Identifier, NumberLiteral, StringLiteral, CharLiteral,
-    BooleanLiteral, NullLiteral, BinaryExpression, BinaryOperator,
+    BooleanLiteral, NullLiteral, UnsetLiteral, BinaryExpression, BinaryOperator,
     UnaryExpression, UnaryOperator, AssignmentExpression, AssignmentOperator,
     CallExpression, MemberAccessExpression, IndexExpression,
     TernaryExpression, GroupExpression, MultiWayEqExpression, MultiWayEqCase,
+    TupleExpression, TupleField, SpreadExpression,
 } from '../ast';
 import { createSpan, SourceSpan } from '../../common/source-location';
 import { createErrorNode } from '../error-recovery';
@@ -187,6 +188,9 @@ export class ExpressionParser {
             case TokenType.Null:
                 return { kind: 'NullLiteral', span: token.span } as NullLiteral;
 
+            case TokenType.Unset:
+                return { kind: 'UnsetLiteral', span: token.span } as UnsetLiteral;
+
             // 标识符
             case TokenType.Identifier:
                 return { kind: 'Identifier', name: token.lexeme, span: token.span } as Identifier;
@@ -214,8 +218,25 @@ export class ExpressionParser {
                 } as UnaryExpression;
             }
 
-            // 分组 (Expression)
+            // 展开运算符 ...
+            case TokenType.Spread: {
+                const argument = this.parseExpression(Precedence.Unary);
+                return {
+                    kind: 'SpreadExpression',
+                    argument,
+                    span: this.spanFromTo(token.span, argument.span),
+                } as SpreadExpression;
+            }
+
+            // 分组 (Expression) 或 Tuple 字面量
             case TokenType.LeftParen: {
+                // 预读取：检查是否为 Tuple 字面量 (identifier: value, ...)
+                const firstInParen = this.current();
+                const secondInParen = this.peek();
+                if (firstInParen && firstInParen.type === TokenType.Identifier
+                    && secondInParen && secondInParen.type === TokenType.Colon) {
+                    return this.parseTupleLiteral(token.span);
+                }
                 const expr = this.parseExpression();
                 this.expect(TokenType.RightParen, "Expected ')' after expression");
                 return {
@@ -442,6 +463,44 @@ export class ExpressionParser {
             cases,
             defaultCase,
             span: this.spanFromTo(subject.span, lastSpan),
+        };
+    }
+
+    /**
+     * 解析 Tuple 字面量: (name: value, name: value, ...)
+     * 调用前已消费 '('
+     */
+    private parseTupleLiteral(lpSpan: SourceSpan): TupleExpression {
+        const fields: TupleField[] = [];
+
+        while (true) {
+            const nameToken = this.expect(TokenType.Identifier, 'Expected field name in tuple');
+            const name: Identifier = { kind: 'Identifier', name: nameToken.lexeme, span: nameToken.span };
+
+            this.expect(TokenType.Colon, "Expected ':' after field name in tuple");
+
+            const value = this.parseExpression();
+
+            fields.push({
+                kind: 'TupleField',
+                name,
+                value,
+                span: this.spanFromTo(name.span, value.span),
+            });
+
+            if (this.current() && this.current()!.type === TokenType.Comma) {
+                this.advance();
+                continue;
+            }
+            break;
+        }
+
+        this.expect(TokenType.RightParen, "Expected ')' after tuple fields");
+
+        return {
+            kind: 'TupleExpression',
+            fields,
+            span: this.spanFromTo(lpSpan, this.lastTokenSpan()),
         };
     }
 

@@ -242,4 +242,55 @@ if (x > 0) {
             expect(result.diagnostics.getErrors().length).toBeGreaterThan(0);
         });
     });
+
+    describe('Phase 2: Enum', () => {
+        it('基本枚举', () => {
+            const source = `enum Season { Spring, Summer, Autumn, Winter }`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('enum Season {');
+            expect(result.code).toContain('Spring');
+            expect(result.code).toContain('Summer');
+        });
+
+        it('枚举成员带值', () => {
+            const source = `enum Code { A = 1, B = 2 }`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('A = 1');
+            expect(result.code).toContain('B = 2');
+        });
+    });
+
+    describe('Phase 2: Tribool', () => {
+        it('tribool 类型 → boolean | undefined', () => {
+            const result = compile('tribool t = true;');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('let t: boolean | undefined = true');
+        });
+
+        it('unset → undefined', () => {
+            const result = compile('tribool t = unset;');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('let t: boolean | undefined = undefined');
+        });
+    });
+
+    describe('Phase 2: Tuple', () => {
+        it('Tuple 类型 → object', () => {
+            const result = compile('Tuple person = (name: "Alice", age: 18);');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('let person: object = {');
+            expect(result.code).toContain('name: "Alice"');
+            expect(result.code).toContain('age: 18');
+        });
+    });
+
+    describe('Phase 2: Spread', () => {
+        it('spread 前缀表达式', () => {
+            const result = compile('var x = ...args;');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('let x = ...args');
+        });
+    });
 });

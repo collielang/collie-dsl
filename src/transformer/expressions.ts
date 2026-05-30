@@ -1,9 +1,10 @@
 import {
     Expression, NumberLiteral, StringLiteral, MultiLineStringLiteral,
-    CharLiteral, BooleanLiteral, NullLiteral, Identifier,
+    CharLiteral, BooleanLiteral, NullLiteral, UnsetLiteral, Identifier,
     BinaryExpression, UnaryExpression, AssignmentExpression,
     CallExpression, MemberAccessExpression, IndexExpression,
     TernaryExpression, GroupExpression, MultiWayEqExpression,
+    TupleExpression, SpreadExpression,
     ErrorNode,
 } from '../parser/ast';
 import { mapBuiltinFunction, isBuiltin, isConstructorCall } from './stdlib';
@@ -30,6 +31,8 @@ export class ExpressionTransformer {
                 return this.transformBooleanLiteral(node as BooleanLiteral);
             case 'NullLiteral':
                 return this.transformNullLiteral(node as NullLiteral);
+            case 'UnsetLiteral':
+                return 'undefined';
             case 'Identifier':
                 return this.transformIdentifier(node as Identifier);
             case 'BinaryExpression':
@@ -50,6 +53,14 @@ export class ExpressionTransformer {
                 return this.transformGroupExpression(node as GroupExpression);
             case 'MultiWayEqExpression':
                 return this.transformMultiWayEqExpression(node as MultiWayEqExpression);
+            case 'TupleExpression': {
+                const fields = (node as TupleExpression).fields
+                    .map(f => `${f.name.name}: ${this.transform(f.value)}`)
+                    .join(', ');
+                return `{ ${fields} }`;
+            }
+            case 'SpreadExpression':
+                return `...${this.transform((node as SpreadExpression).argument)}`;
             default:
                 return `/* TODO: ${(node as any).kind} */ null`;
         }

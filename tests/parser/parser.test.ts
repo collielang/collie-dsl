@@ -243,4 +243,96 @@ var y = 2;`;
             expect(program.statements.length).toBeGreaterThanOrEqual(1);
         });
     });
+
+    describe('Phase 2: Enum', () => {
+        it('基本枚举声明', () => {
+            const source = `enum Season { Spring, Summer, Autumn, Winter }`;
+            const { program } = parse(source);
+            expect(program.statements.length).toBe(1);
+            const stmt = program.statements[0];
+            expect(stmt.kind).toBe('EnumDeclaration');
+            if (stmt.kind === 'EnumDeclaration') {
+                expect(stmt.name.name).toBe('Season');
+                expect(stmt.members.length).toBe(4);
+                expect(stmt.members[0].name.name).toBe('Spring');
+                expect(stmt.members[1].name.name).toBe('Summer');
+                expect(stmt.members[2].name.name).toBe('Autumn');
+                expect(stmt.members[3].name.name).toBe('Winter');
+            }
+        });
+
+        it('枚举成员带值', () => {
+            const source = `enum Code { A = 1, B = 2, C = 3 }`;
+            const { program } = parse(source);
+            const stmt = program.statements[0];
+            expect(stmt.kind).toBe('EnumDeclaration');
+            if (stmt.kind === 'EnumDeclaration') {
+                expect(stmt.members[0].value).not.toBeNull();
+                expect(stmt.members[0].value!.kind).toBe('NumberLiteral');
+            }
+        });
+    });
+
+    describe('Phase 2: Tribool', () => {
+        it('tribool 变量声明', () => {
+            const { program } = parse('tribool x = unset;');
+            expect(program.statements.length).toBe(1);
+            const stmt = program.statements[0];
+            expect(stmt.kind).toBe('VariableDeclaration');
+            if (stmt.kind === 'VariableDeclaration') {
+                expect(stmt.varType).not.toBeNull();
+                expect((stmt.varType as any).name).toBe('tribool');
+                expect(stmt.initializer.kind).toBe('UnsetLiteral');
+            }
+        });
+
+        it('unset 字面量在表达式中', () => {
+            const { program } = parse('tribool x = unset;');
+            const stmt = program.statements[0];
+            if (stmt.kind === 'VariableDeclaration') {
+                expect(stmt.initializer.kind).toBe('UnsetLiteral');
+            }
+        });
+    });
+
+    describe('Phase 2: Tuple', () => {
+        it('Tuple 类型变量声明', () => {
+            const { program } = parse('Tuple person = (name: "Alice", age: 18);');
+            expect(program.statements.length).toBe(1);
+            const stmt = program.statements[0];
+            expect(stmt.kind).toBe('VariableDeclaration');
+            if (stmt.kind === 'VariableDeclaration') {
+                expect((stmt.varType as any).name).toBe('Tuple');
+                expect(stmt.initializer.kind).toBe('TupleExpression');
+                const tuple = stmt.initializer;
+                if (tuple.kind === 'TupleExpression') {
+                    expect(tuple.fields.length).toBe(2);
+                    expect(tuple.fields[0].name.name).toBe('name');
+                    expect(tuple.fields[1].name.name).toBe('age');
+                }
+            }
+        });
+
+        it('Tuple 字面量与 GroupExpression 区分', () => {
+            const { program } = parse('number x = (1 + 2);');
+            const stmt = program.statements[0];
+            if (stmt.kind === 'VariableDeclaration') {
+                expect(stmt.initializer.kind).toBe('GroupExpression');
+            }
+        });
+    });
+
+    describe('Phase 2: Spread', () => {
+        it('spread 前缀表达式', () => {
+            const { program } = parse('var x = ...args;');
+            const stmt = program.statements[0];
+            if (stmt.kind === 'VariableDeclaration') {
+                expect(stmt.initializer.kind).toBe('SpreadExpression');
+                const spread = stmt.initializer;
+                if (spread.kind === 'SpreadExpression') {
+                    expect(spread.argument.kind).toBe('Identifier');
+                }
+            }
+        });
+    });
 });

@@ -63,6 +63,10 @@ export class Transformer {
                 lines.push(
                     this.declTransformer.transformFunctionDeclaration(stmt as FunctionDeclaration),
                 );
+            } else if (stmt.kind === 'EnumDeclaration') {
+                lines.push(
+                    this.declTransformer.transformEnumDeclaration(stmt as any),
+                );
             } else {
                 lines.push(this.stmtTransformer.transform(stmt));
             }
