@@ -58,12 +58,6 @@ export class Compiler {
         const parser = new Parser(tokens, this.diagnostics);
         const program = parser.parse();
 
-        // 合并 parser 诊断
-        const parseDiag = parser.getDiagnostics();
-        for (const err of parseDiag.getErrors()) {
-            this.diagnostics.addError(err.message, err.span);
-        }
-
         // 阶段 3: Transformer
         const transformer = new Transformer();
         const code = transformer.transform(program);
@@ -97,11 +91,6 @@ export class Compiler {
         const tokens = lexer.tokenize();
         const parser = new Parser(tokens, this.diagnostics);
         const program = parser.parse();
-
-        const parseDiag = parser.getDiagnostics();
-        for (const err of parseDiag.getErrors()) {
-            this.diagnostics.addError(err.message, err.span);
-        }
 
         return { program, diagnostics: this.diagnostics };
     }
