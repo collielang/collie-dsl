@@ -3,7 +3,7 @@ import {
     Statement, BlockStatement, IfStatement, WhileStatement, DoWhileStatement,
     ForStatement, ReturnStatement, BreakStatement, ContinueStatement,
     ExpressionStatement, Expression, Identifier, VariableDeclaration,
-    ErrorNode,
+    MultiVariableDeclaration, ErrorNode,
 } from '../ast';
 import { ExpressionParser } from './expressions';
 import { TypeParser } from './types';
@@ -171,6 +171,7 @@ export class StatementParser {
 
     /**
      * 尝试解析变量声明，如果失败则回退为表达式语句
+     * 支持: TypeName id = expr;  和  TypeName id1, id2, ... = expr;
      */
     private tryParseVariableDeclarationOrExpression(): Statement {
         const savedPos = this.getPosition();
@@ -179,8 +180,9 @@ export class StatementParser {
         const nameToken = this.current();
         if (nameToken && nameToken.type === TokenType.Identifier) {
             const afterName = this.peek();
+
+            // 单变量声明: TypeName id = expr;
             if (afterName && afterName.type === TokenType.Equals) {
-                // 确认是变量声明
                 const varType = { kind: 'IdentifierType' as const, name: token.lexeme, span: token.span };
                 this.advance(); // skip name
                 const name: Identifier = { kind: 'Identifier', name: nameToken.lexeme, span: nameToken.span };
@@ -197,6 +199,38 @@ export class StatementParser {
                     kind: 'VariableDeclaration',
                     varType,
                     name,
+                    initializer: init,
+                    span: createSpan(token.span.start, this.lastTokenSpan().end),
+                };
+            }
+
+            // 多变量声明: TypeName id1, id2, ... = expr;
+            if (afterName && afterName.type === TokenType.Comma) {
+                const varType = { kind: 'IdentifierType' as const, name: token.lexeme, span: token.span };
+                const names: Identifier[] = [
+                    { kind: 'Identifier', name: nameToken.lexeme, span: nameToken.span },
+                ];
+                this.advance(); // skip first name
+
+                // 解析逗号分隔的变量名
+                while (this.current() && this.current()!.type === TokenType.Comma) {
+                    this.advance(); // skip ,
+                    const nextName = this.expect(TokenType.Identifier, 'Expected variable name after comma');
+                    names.push({ kind: 'Identifier', name: nextName.lexeme, span: nextName.span });
+                }
+
+                this.expect(TokenType.Equals, "Expected '=' in multi-variable declaration");
+
+                this.exprParser.setPosition(this.pos);
+                const init = this.exprParser.parseExpression();
+                this.syncPosition();
+
+                this.expect(TokenType.Semicolon, "Expected ';' after multi-variable declaration");
+
+                return {
+                    kind: 'MultiVariableDeclaration',
+                    varType,
+                    names,
                     initializer: init,
                     span: createSpan(token.span.start, this.lastTokenSpan().end),
                 };
