@@ -592,7 +592,7 @@ export class StatementParser {
 
     peek(): Token | null {
         const [_, nextPos] = this.skipNewlines(this.pos);
-        return this.skipNewlines(nextPos)[0];
+        return this.skipNewlines(nextPos + 1)[0];
     }
 
     advance(): Token | null {
