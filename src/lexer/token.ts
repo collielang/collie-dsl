@@ -296,7 +296,8 @@ export function canStartExpression(type: TokenType): boolean {
         type === TokenType.LeftParen ||
         type === TokenType.LeftBracket ||
         type === TokenType.Bang || type === TokenType.Minus ||
-        type === TokenType.PlusPlus || type === TokenType.MinusMinus;
+        type === TokenType.PlusPlus || type === TokenType.MinusMinus ||
+        isTypeKeywordStart(type);
 }
 
 // 判断 type token 是否可以作为类型注解开始
