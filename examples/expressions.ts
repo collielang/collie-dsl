@@ -27,3 +27,4 @@ function main() {
     console.log("neg = " + String(neg));
     console.log("not true = " + String(Boolean(not)));
 }
+main();

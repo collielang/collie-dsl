@@ -17,3 +17,4 @@ function main() {
         i = i + 1;
     }
 }
+main();

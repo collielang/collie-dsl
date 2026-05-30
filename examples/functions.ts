@@ -31,3 +31,4 @@ function main() {
     let fact5: number = factorial(5);
     console.log("5! = " + String(fact5));
 }
+main();

@@ -16,3 +16,4 @@ function main() {
     console.log("Fibonacci Sequence:");
     printFibonacci(10);
 }
+main();

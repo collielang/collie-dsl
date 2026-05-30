@@ -24,3 +24,4 @@ function main() {
     }
     console.log("--- for-each demo ---");
 }
+main();

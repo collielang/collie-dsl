@@ -1,5 +1,6 @@
 // Collie Example: FizzBuzz
 // compile: npx ts-node src/cli.ts examples/fizzbuzz.cl
+// run: node examples/fizzbuzz.ts
 
 fn fizzbuzz(n: number): string {
     if (n % 15 == 0) {
@@ -22,3 +23,5 @@ fn main() {
         i = i + 1;
     }
 }
+
+main();

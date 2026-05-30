@@ -17,3 +17,4 @@ function main() {
     console.log("flag = " + String(Boolean(flag)));
     console.log("inferred = " + String(inferred));
 }
+main();

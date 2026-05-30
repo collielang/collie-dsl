@@ -1,5 +1,6 @@
 // Collie Example: Control Flow
 // compile: npx ts-node src/cli.ts examples/control-flow.cl
+// run: node examples/control-flow.ts
 
 fn main() {
     number x = 10;
@@ -38,3 +39,5 @@ fn main() {
     print("--- for-each demo ---");
     // (需要 iterable 支持，示意)
 }
+
+main();

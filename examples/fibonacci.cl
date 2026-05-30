@@ -1,5 +1,6 @@
 // Collie Example: Fibonacci Sequence
 // compile: npx ts-node src/cli.ts examples/fibonacci.cl
+// run: node examples/fibonacci.ts
 
 // 递归计算第 n 项斐波那契数
 fn fibonacci(n: number): number {
@@ -23,3 +24,5 @@ fn main() {
     print("Fibonacci Sequence:");
     printFibonacci(10);
 }
+
+main();

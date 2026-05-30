@@ -15,3 +15,4 @@ function main() {
     console.log("bool(1): " + String(Boolean(truthy)));
     console.log("bool(0): " + String(Boolean(falsy)));
 }
+main();

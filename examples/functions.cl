@@ -1,5 +1,6 @@
 // Collie Example: Functions
 // compile: npx ts-node src/cli.ts examples/functions.cl
+// run: node examples/functions.ts
 
 // 基本函数 — 单参数 + 单返回值
 fn square(x: number): number {
@@ -47,3 +48,5 @@ fn main() {
     number fact5 = factorial(5);
     print("5! = " + string(fact5));
 }
+
+main();

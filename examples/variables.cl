@@ -1,5 +1,6 @@
 // Collie Example: Variable Declarations
 // compile: npx ts-node src/cli.ts examples/variables.cl
+// run: node examples/variables.ts
 
 fn main() {
     // 显式类型声明
@@ -23,3 +24,5 @@ fn main() {
     print("flag = " + string(bool(flag)));
     print("inferred = " + string(inferred));
 }
+
+main();

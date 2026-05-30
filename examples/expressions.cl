@@ -1,5 +1,6 @@
 // Collie Example: Expressions & Operators
 // compile: npx ts-node src/cli.ts examples/expressions.cl
+// run: node examples/expressions.ts
 
 fn main() {
     number a = 10;
@@ -44,3 +45,5 @@ fn main() {
     // 成员访问 (示意)
     // obj.field;
 }
+
+main();

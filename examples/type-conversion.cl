@@ -1,5 +1,6 @@
 // Collie Example: Type Conversion
 // compile: npx ts-node src/cli.ts examples/type-conversion.cl
+// run: node examples/type-conversion.ts
 
 fn main() {
     // 数字类型转换
@@ -23,3 +24,5 @@ fn main() {
     print("bool(1): " + string(bool(truthy)));
     print("bool(0): " + string(bool(falsy)));
 }
+
+main();
