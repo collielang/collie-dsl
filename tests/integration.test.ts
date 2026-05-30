@@ -1,4 +1,4 @@
-import { Compiler, compile } from '../../src/compiler';
+import { Compiler, compile } from '../src/compiler';
 
 describe('Compiler 集成测试', () => {
     describe('变量声明', () => {
