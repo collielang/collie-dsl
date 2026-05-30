@@ -1,5 +1,5 @@
 import {
-    Statement, VariableDeclaration, IfStatement, WhileStatement,
+    Statement, Expression, VariableDeclaration, IfStatement, WhileStatement,
     DoWhileStatement, ForStatement, ReturnStatement, BreakStatement,
     ContinueStatement, ExpressionStatement, BlockStatement,
     IdentifierType, ErrorNode, AssignmentExpression,
@@ -198,7 +198,7 @@ export class StatementTransformer {
                     initStr = `let ${name} = ${init}`;
                 }
             } else {
-                initStr = this.exprTransformer.transform(node.init);
+                initStr = this.exprTransformer.transform(node.init as Expression);
             }
         }
 
