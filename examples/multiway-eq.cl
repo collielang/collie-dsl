@@ -2,6 +2,12 @@
 // compile: npx ts-node src/cli.ts examples/multiway-eq.cl
 // run: node examples/multiway-eq.ts
 
+number count = 1;
+fn increaseAndGet() {
+    count/* Inline comment */++;
+    return count;
+}
+
 fn main() {
     // ========================================
     // 基本用法：score 匹配到对应等级
@@ -24,6 +30,11 @@ fn main() {
     bool flag = false;
     number val = flag ==? true: 1, 2;
     print("flag=" + string(bool(flag)) + " -> val=" + string(val));
+
+    // ========================================
+    // ==? 表达式左侧表达式多次调用值变化情况
+    // ========================================
+    number anotherVal = increaseAndGet() ==? 3: "Three", 2: "Two", 1: "One", "Many";
 
     // ========================================
     // 换行 + 行内注释

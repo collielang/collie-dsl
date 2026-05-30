@@ -1,3 +1,8 @@
+let count: number = 1;
+function increaseAndGet() {
+    count++;
+    return count;
+}
 function main() {
     let score: number = 85;
     let grade: string = (() => {
@@ -24,6 +29,13 @@ function main() {
   return 2;
 })();
     console.log("flag=" + String(Boolean(flag)) + " -> val=" + String(val));
+    let anotherVal: number = (() => {
+  const _v = increaseAndGet();
+  if (_v === 3) return "Three";
+  if (_v === 2) return "Two";
+  if (_v === 1) return "One";
+  return "Many";
+})();
     let num: number = 3;
     let result: string = (() => {
   const _v = num;
