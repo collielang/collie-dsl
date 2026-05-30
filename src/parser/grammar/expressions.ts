@@ -1,4 +1,4 @@
-import { TokenType, Token, canStartExpression } from '../../lexer/token';
+import { TokenType, Token, canStartExpression, isTypeToken } from '../../lexer/token';
 import {
     Expression, Identifier, NumberLiteral, StringLiteral, CharLiteral,
     BooleanLiteral, NullLiteral, BinaryExpression, BinaryOperator,
@@ -210,6 +210,10 @@ export class ExpressionParser {
             }
 
             default:
+                // 类型关键字作为表达式 (用于类型转换: number(x), string(x) 等)
+                if (isTypeToken(token.type)) {
+                    return { kind: 'Identifier', name: token.lexeme, span: token.span } as Identifier;
+                }
                 this.diagnostics.addError(
                     `Unexpected token '${token.lexeme}' in expression`,
                     token.span,
