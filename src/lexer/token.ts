@@ -23,6 +23,7 @@ export enum TokenType {
     False = 'False',
     Null = 'Null',
     Unset = 'Unset',
+    In = 'In',
     Tuple = 'Tuple',
     Enum = 'Enum',
     Assert = 'Assert',
