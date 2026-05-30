@@ -1,38 +1,34 @@
+前往此目录查看：
+E:\Project\CollieLang 牧羊犬编程语言\collie\document\i18n\zh-Hans\docusaurus-plugin-content-docs\current\
 
-## 类型
+我写了一个我希望实现的基本数据类型文档：
+类型请查阅相关文档：
+/reference/data-type/primitive-data-type/base
+/reference/data-type/primitive-data-type/none
+/reference/data-type/primitive-data-type/character
+/reference/data-type/primitive-data-type/numeric
+/reference/data-type/primitive-data-type/logical
+/reference/data-type/primitive-data-type/bitwise
+/reference/data-type/primitive-data-type/enum
 
-### 基类型（Base Type）
+但是引用数据类型我还没有完全想好：
+引用数据类型
+/reference/data-type/reference-data-type/container/collection
+/reference/data-type/reference-data-type/container/dictionary
+/reference/data-type/reference-data-type/tuple
+/reference/data-type/reference-data-type/union
+/reference/data-type/reference-data-type/buffer
 
-基类型是所有类型的基础，所有类型都会继承自它。
+语法可以参考：
+/reference/grammer/basic-grammer
+其中可能有一些前后矛盾的，如果是这样，请你向我明确询问，我来给你明确的答案
 
-type: object
+主要想做的比较有特色的几点：
+数字使用 number / integer / decimal 类型，像 Python 那样可以自动扩容，无需担心精度问题
+函数调用可以返回多个值，而不需要把它一定要包在一个数组或者对象中（也可以理解为tuple的语法糖）
 
-### 空类型（None Type）
+然后流程控制可以参考这个
+/docs/reference/grammer/control-flow
 
-空类型也是一个对象。
-
-type: none
-
-Collie 语言的空类型与其他语言有些差异， null 是一个特殊对象，也有其自身属性。
-
-### 字符类型（Character Type）
-
-char	2 byte	单个字符。主要用作框架的底层逻辑实现等，一般不建议直接使用 char 类型。
-character	2 / 4 byte	单字，对字符串中的每一项来说。1 个 character 为 1 个 char 或 1 个 代理对（具体细节可参考 UTF-16 编码 ）
-string	动态调整	字符串。等价于 character[], [character]
-也就是说，character 组成的一维数组，天然支持所有 string 的操作方式，你可完全将其当作 string 对象使用。
-
-Collie 使用的 Unicode 编码标准 为 UTF-16 编码。
-
-
-### 数字类型（Numeric Type）
-
-### 逻辑类型（Logical Type）
-
-### 位类型（Bitwise Type）
-
-### 枚举类型（Enum Type）
-
-
-```collie
-
+异常处理相关的，我还没有太多的想法，或许你可以给我一些建议
+/docs/reference/grammer/function
