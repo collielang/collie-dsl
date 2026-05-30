@@ -20,6 +20,7 @@ fn main() {
     print("a % b = " + string(mod));
 
     // 比较运算: == != < > <= >=
+    // Collie 的 == 等价于 TS 的 ===（严格相等，无隐式转换）
     bool eq = a == b;
     bool neq = a != b;
     bool lt = a < b;
@@ -35,7 +36,7 @@ fn main() {
     number max = a > b ? a : b;
     print("max = " + string(max));
 
-    // 一元运算符: - !
+    // 一元运算符: - ! ~
     number neg = -a;
     bool flag = true;
     bool not = !flag;

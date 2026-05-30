@@ -11,8 +11,8 @@ function main() {
     console.log("a * b = " + String(mul));
     console.log("a / b = " + String(div));
     console.log("a % b = " + String(mod));
-    let eq: boolean = a == b;
-    let neq: boolean = a != b;
+    let eq: boolean = a === b;
+    let neq: boolean = a !== b;
     let lt: boolean = a < b;
     let gt: boolean = a > b;
     let le: boolean = a <= b;

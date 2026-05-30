@@ -43,6 +43,7 @@ export type SyntaxKind =
     | 'CallExpression'
     | 'TernaryExpression'
     | 'GroupExpression'
+    | 'MultiWayEqExpression'
     // 类型
     | 'IdentifierType'
     | 'ErrorNode'
@@ -198,9 +199,10 @@ export interface Identifier extends AstNode {
 
 export type BinaryOperator = '+' | '-' | '*' | '/' | '%' |
     '==' | '!=' | '<' | '>' | '<=' | '>=' |
+    '&' | '|' | '^' | '<<' | '>>' |
     '&&' | '||';
 
-export type UnaryOperator = '-' | '!' | '++' | '--';
+export type UnaryOperator = '-' | '!' | '++' | '--' | '~';
 
 export type AssignmentOperator = '=' | '+=' | '-=' | '*=' | '/=' | '%=';
 
@@ -255,6 +257,24 @@ export interface GroupExpression extends AstNode {
     expression: Expression;
 }
 
+// ==? 多路匹配
+export interface MultiWayEqCase {
+    /** 要匹配的值列表 (OR关系，用逗号连接) */
+    values: Expression[];
+    /** 匹配成功时的结果表达式 */
+    result: Expression;
+}
+
+export interface MultiWayEqExpression extends AstNode {
+    kind: 'MultiWayEqExpression';
+    /** ==? 左侧的被匹配表达式 */
+    subject: Expression;
+    /** 匹配 case 列表 (至少 1 个) */
+    cases: MultiWayEqCase[];
+    /** 默认值 (可选) */
+    defaultCase: Expression | null;
+}
+
 // ============================================================
 // 类型注解
 // ============================================================
@@ -301,6 +321,7 @@ export type Expression =
     | CallExpression
     | TernaryExpression
     | GroupExpression
+    | MultiWayEqExpression
     | ErrorNode;
 
 // ============================================================

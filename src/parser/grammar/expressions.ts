@@ -4,7 +4,7 @@ import {
     BooleanLiteral, NullLiteral, BinaryExpression, BinaryOperator,
     UnaryExpression, UnaryOperator, AssignmentExpression, AssignmentOperator,
     CallExpression, MemberAccessExpression, IndexExpression,
-    TernaryExpression, GroupExpression,
+    TernaryExpression, GroupExpression, MultiWayEqExpression, MultiWayEqCase,
 } from '../ast';
 import { createSpan, SourceSpan } from '../../common/source-location';
 import { createErrorNode } from '../error-recovery';
@@ -23,13 +23,17 @@ export enum Precedence {
     Ternary = 3,
     LogicalOr = 4,
     LogicalAnd = 5,
-    Equality = 6,
-    Comparison = 7,
-    Additive = 8,
-    Multiplicative = 9,
-    Unary = 10,
-    Postfix = 11,
-    Primary = 12,
+    BitwiseOr = 6,
+    BitwiseXor = 7,
+    BitwiseAnd = 8,
+    Equality = 9,
+    Comparison = 10,
+    Shift = 11,
+    Additive = 12,
+    Multiplicative = 13,
+    Unary = 14,
+    Postfix = 15,
+    Primary = 16,
 }
 
 // 二元运算符优先级映射
@@ -43,12 +47,17 @@ const BINARY_PRECEDENCE: Partial<Record<TokenType, [Precedence, boolean]>> = {
     [TokenType.PercentEquals]: [Precedence.Assignment, true],
     [TokenType.OrOr]: [Precedence.LogicalOr, false],
     [TokenType.AndAnd]: [Precedence.LogicalAnd, false],
+    [TokenType.Pipe]: [Precedence.BitwiseOr, false],
+    [TokenType.Caret]: [Precedence.BitwiseXor, false],
+    [TokenType.Ampersand]: [Precedence.BitwiseAnd, false],
     [TokenType.EqualsEquals]: [Precedence.Equality, false],
     [TokenType.NotEquals]: [Precedence.Equality, false],
     [TokenType.LessThan]: [Precedence.Comparison, false],
     [TokenType.GreaterThan]: [Precedence.Comparison, false],
     [TokenType.LessThanEquals]: [Precedence.Comparison, false],
     [TokenType.GreaterThanEquals]: [Precedence.Comparison, false],
+    [TokenType.LessThanLessThan]: [Precedence.Shift, false],
+    [TokenType.GreaterThanGreaterThan]: [Precedence.Shift, false],
     [TokenType.Plus]: [Precedence.Additive, false],
     [TokenType.Minus]: [Precedence.Additive, false],
     [TokenType.Star]: [Precedence.Multiplicative, false],
@@ -69,6 +78,11 @@ const BINARY_OP_MAP: Partial<Record<TokenType, BinaryOperator>> = {
     [TokenType.GreaterThan]: '>',
     [TokenType.LessThanEquals]: '<=',
     [TokenType.GreaterThanEquals]: '>=',
+    [TokenType.LessThanLessThan]: '<<',
+    [TokenType.GreaterThanGreaterThan]: '>>',
+    [TokenType.Ampersand]: '&',
+    [TokenType.Pipe]: '|',
+    [TokenType.Caret]: '^',
     [TokenType.AndAnd]: '&&',
     [TokenType.OrOr]: '||',
 };
@@ -181,12 +195,14 @@ export class ExpressionParser {
             case TokenType.Bang:
             case TokenType.Minus:
             case TokenType.PlusPlus:
-            case TokenType.MinusMinus: {
+            case TokenType.MinusMinus:
+            case TokenType.Tilde: {
                 const opMap: Partial<Record<TokenType, UnaryOperator>> = {
                     [TokenType.Bang]: '!',
                     [TokenType.Minus]: '-',
                     [TokenType.PlusPlus]: '++',
                     [TokenType.MinusMinus]: '--',
+                    [TokenType.Tilde]: '~',
                 };
                 const operand = this.parseExpression(Precedence.Unary);
                 return {
@@ -317,6 +333,11 @@ export class ExpressionParser {
             } as UnaryExpression;
         }
 
+        // ==? 多路匹配
+        if (opType === TokenType.MultiWayEq) {
+            return this.parseMultiWayEq(left, token.span);
+        }
+
         this.diagnostics.addError(`Unexpected operator '${token.lexeme}'`, token.span);
         return createErrorNode(`Unexpected operator '${token.lexeme}'`, token.span);
     }
@@ -344,6 +365,84 @@ export class ExpressionParser {
         }
 
         return args;
+    }
+
+    /**
+     * 解析 ==? 多路匹配表达式
+     * 语法: subject ==? pattern: result, pattern2: result2, ..., defaultExpr
+     *       pattern 可以是单个值或逗号分隔的 OR 值列表
+     */
+    private parseMultiWayEq(subject: Expression, eqSpan: SourceSpan): MultiWayEqExpression {
+        const cases: MultiWayEqCase[] = [];
+        let defaultCase: Expression | null = null;
+
+        if (!this.canStart()) {
+            this.diagnostics.addError("Expected expression after '==?'", eqSpan);
+            return {
+                kind: 'MultiWayEqExpression',
+                subject,
+                cases,
+                defaultCase: null,
+                span: this.spanFromTo(subject.span, eqSpan),
+            };
+        }
+
+        while (true) {
+            // 收集逗号分隔的值列表 (OR 关系)
+            const values: Expression[] = [this.parseExpression()];
+
+            while (this.current() && this.current()!.type === TokenType.Comma) {
+                this.advance(); // skip ,
+                if (!this.canStart()) {
+                    this.diagnostics.addError("Expected expression after ','", this.lastTokenSpan());
+                    break;
+                }
+                values.push(this.parseExpression());
+            }
+
+            // 检查值列表后面是否有 ':'
+            if (this.current() && this.current()!.type === TokenType.Colon) {
+                this.advance(); // skip :
+                if (!this.canStart()) {
+                    this.diagnostics.addError("Expected result expression after ':'", this.lastTokenSpan());
+                    break;
+                }
+                const result = this.parseExpression();
+                cases.push({ values, result });
+
+                // 下一个是逗号则继续，否则结束
+                if (this.current() && this.current()!.type === TokenType.Comma) {
+                    this.advance(); // skip ,
+                    if (!this.canStart()) break;
+                    continue;
+                }
+                break;
+            }
+
+            // 没有 ':' → 最后一个表达式是默认值
+            defaultCase = values.pop()!;
+            if (values.length > 0) {
+                this.diagnostics.addError(
+                    "Only the last comma-separated expression can be a default value (use ':' for cases)",
+                    values[0].span,
+                );
+            }
+            break;
+        }
+
+        const lastSpan = cases.length > 0
+            ? cases[cases.length - 1].result.span
+            : defaultCase
+                ? defaultCase.span
+                : subject.span;
+
+        return {
+            kind: 'MultiWayEqExpression',
+            subject,
+            cases,
+            defaultCase,
+            span: this.spanFromTo(subject.span, lastSpan),
+        };
     }
 
     /**
@@ -428,6 +527,8 @@ export class ExpressionParser {
                 return [Precedence.Postfix, false];
             case TokenType.QuestionMark:
                 return [Precedence.Ternary, true];
+            case TokenType.MultiWayEq:
+                return [Precedence.Lowest, false]; // ==? 绑定最弱
             case TokenType.PlusPlus:
             case TokenType.MinusMinus:
                 return [Precedence.Postfix, false];

@@ -3,7 +3,8 @@ import {
     CharLiteral, BooleanLiteral, NullLiteral, Identifier,
     BinaryExpression, UnaryExpression, AssignmentExpression,
     CallExpression, MemberAccessExpression, IndexExpression,
-    TernaryExpression, GroupExpression, ErrorNode,
+    TernaryExpression, GroupExpression, MultiWayEqExpression,
+    ErrorNode,
 } from '../parser/ast';
 import { mapBuiltinFunction, isBuiltin, isConstructorCall } from './stdlib';
 
@@ -47,6 +48,8 @@ export class ExpressionTransformer {
                 return this.transformTernaryExpression(node as TernaryExpression);
             case 'GroupExpression':
                 return this.transformGroupExpression(node as GroupExpression);
+            case 'MultiWayEqExpression':
+                return this.transformMultiWayEqExpression(node as MultiWayEqExpression);
             default:
                 return `/* TODO: ${(node as any).kind} */ null`;
         }
@@ -88,8 +91,12 @@ export class ExpressionTransformer {
         const left = this.transform(node.left);
         const right = this.transform(node.right);
 
-        // 处理 Collie ==? (严格相等) 和 == (值相等)
-        let op = node.operator;
+        // Collie == / != 映射为 TypeScript === / !==（Collie 默认严格相等）
+        const opMap: Record<string, string> = {
+            '==': '===',
+            '!=': '!==',
+        };
+        let op = opMap[node.operator] || node.operator;
 
         return `${left} ${op} ${right}`;
     }
@@ -148,6 +155,28 @@ export class ExpressionTransformer {
 
     private transformGroupExpression(node: GroupExpression): string {
         return `(${this.transform(node.expression)})`;
+    }
+
+    private transformMultiWayEqExpression(node: MultiWayEqExpression): string {
+        const subject = this.transform(node.subject);
+
+        // 构建 if-else 链
+        let body = '';
+
+        for (const c of node.cases) {
+            const conditions = c.values
+                .map(v => `_v === ${this.transform(v)}`)
+                .join(' || ');
+            body += `  if (${conditions}) return ${this.transform(c.result)};\n`;
+        }
+
+        if (node.defaultCase) {
+            body += `  return ${this.transform(node.defaultCase)};\n`;
+        } else {
+            body += '  return undefined;\n';
+        }
+
+        return `(() => {\n  const _v = ${subject};\n${body}})()`;
     }
 
     private transformErrorNode(node: ErrorNode): string {

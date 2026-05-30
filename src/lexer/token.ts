@@ -297,6 +297,7 @@ export function canStartExpression(type: TokenType): boolean {
         type === TokenType.LeftBracket ||
         type === TokenType.Bang || type === TokenType.Minus ||
         type === TokenType.PlusPlus || type === TokenType.MinusMinus ||
+        type === TokenType.Tilde ||
         isTypeKeywordStart(type);
 }
 
