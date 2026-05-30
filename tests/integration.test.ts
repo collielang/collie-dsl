@@ -50,6 +50,8 @@ describe('Compiler 集成测试', () => {
             expect(result.success).toBe(true);
             expect(result.code).toContain('function log(msg: string)');
             expect(result.code).not.toContain(': void');
+            // print → console.log
+            expect(result.code).toContain('console.log(msg)');
         });
 
         it('多返回值函数', () => {
@@ -169,6 +171,59 @@ if (x > 0) {
             expect(code).toContain('let x: number = 1');
             expect(code).toContain('let y = x + 2');
             expect(code).toContain('if (x > 0)');
+        });
+    });
+
+    describe('API 映射 (Collie → TypeScript)', () => {
+        it('print → console.log', () => {
+            const result = compile('print("hello");');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('console.log("hello")');
+        });
+
+        it('print 保留在复杂表达式中', () => {
+            const source = `fn greet(name: string) {
+    print("Hello, " + name);
+}`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('console.log(');
+        });
+
+        it('type 转换: number() → Number()', () => {
+            const result = compile('number x = number("42");');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('Number(');
+        });
+
+        it('type 转换: string() → String()', () => {
+            const result = compile('string s = string(42);');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('String(');
+        });
+
+        it('type 转换: bool() → Boolean()', () => {
+            const result = compile('bool b = bool(1);');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('Boolean(');
+        });
+
+        it('type 转换: integer() → BigInt()', () => {
+            const result = compile('integer i = integer("9007199254740993");');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('BigInt(');
+        });
+
+        it('decimal() → new Decimal()', () => {
+            const result = compile('decimal d = decimal("3.14159");');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('new Decimal(');
+        });
+
+        it('自定义函数名不受映射影响', () => {
+            const result = compile('number x = myPrint(42);');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('myPrint(42)');
         });
     });
 
