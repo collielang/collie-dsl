@@ -1,0 +1,188 @@
+import { Compiler, compile } from '../../src/compiler';
+
+describe('Compiler 集成测试', () => {
+    describe('变量声明', () => {
+        it('number 类型', () => {
+            const result = compile('number x = 42;');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('let x: number = 42');
+        });
+
+        it('var 类型推断', () => {
+            const result = compile('var x = 42;');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('let x = 42');
+        });
+
+        it('字符串', () => {
+            const result = compile('string name = "Collie";');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('let name: string = "Collie"');
+        });
+
+        it('bool 类型', () => {
+            const result = compile('bool flag = true;');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('let flag: boolean = true');
+        });
+    });
+
+    describe('函数声明', () => {
+        it('基本函数', () => {
+            const source = `fn add(a: number, b: number): number {
+    return a + b;
+}`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            const code = result.code;
+            expect(code).toContain('function add');
+            expect(code).toContain('a: number');
+            expect(code).toContain('b: number');
+            expect(code).toContain(': number');
+            expect(code).toContain('return a + b');
+        });
+
+        it('无返回值函数', () => {
+            const source = `fn log(msg: string) {
+    print(msg);
+}`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('function log(msg: string)');
+            expect(result.code).not.toContain(': void');
+        });
+
+        it('多返回值函数', () => {
+            const source = `fn getPair(): string, integer {
+    return "hello", 42;
+}`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain(': [string, bigint]');
+            expect(result.code).toContain('return ["hello", 42]');
+        });
+    });
+
+    describe('控制流', () => {
+        it('if-else', () => {
+            const source = `if (x > 0) {
+    x = 1;
+} else {
+    x = 0;
+}`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('if (x > 0)');
+            expect(result.code).toContain('else');
+        });
+
+        it('while', () => {
+            const source = `while (x < 10) {
+    x = x + 1;
+}`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('while (x < 10)');
+        });
+
+        it('do-while', () => {
+            const source = `do {
+    x = x + 1;
+} while (x < 10);`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('do {');
+            expect(result.code).toContain('while (x < 10)');
+        });
+
+        it('C-style for', () => {
+            const source = `for (var i = 0; i < 10; i = i + 1) {
+    print(i);
+}`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('for (let i = 0; i < 10; i = i + 1)');
+        });
+
+        it('for-each', () => {
+            const source = `for (item : items) {
+    print(item);
+}`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('for (const item of items)');
+        });
+    });
+
+    describe('表达式', () => {
+        it('二元运算', () => {
+            const result = compile('number x = 1 + 2 * 3;');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('1 + 2 * 3');
+        });
+
+        it('三元表达式', () => {
+            const result = compile('number x = a ? 1 : 2;');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('a ? 1 : 2');
+        });
+
+        it('成员访问', () => {
+            const result = compile('number x = obj.field;');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('obj.field');
+        });
+
+        it('函数调用', () => {
+            const result = compile('number x = add(1, 2);');
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('add(1, 2)');
+        });
+    });
+
+    describe('完整程序', () => {
+        it('阶乘函数', () => {
+            const source = `fn factorial(n: number): number {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            const code = result.code;
+            expect(code).toContain('function factorial(n: number): number');
+            expect(code).toContain('if (n <= 1)');
+            expect(code).toContain('return 1');
+            expect(code).toContain('return n * factorial(n - 1)');
+        });
+
+        it('多语句程序', () => {
+            const source = `number x = 1;
+var y = x + 2;
+if (x > 0) {
+    x = x + 1;
+}`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            const code = result.code;
+            expect(code).toContain('let x: number = 1');
+            expect(code).toContain('let y = x + 2');
+            expect(code).toContain('if (x > 0)');
+        });
+    });
+
+    describe('错误处理', () => {
+        it('词法错误', () => {
+            const result = compile('number x = @@@;');
+            expect(result.success).toBe(false);
+            expect(result.diagnostics.getErrors().length).toBeGreaterThan(0);
+        });
+
+        it('语法错误', () => {
+            const result = compile('number x = ;');
+            expect(result.success).toBe(false);
+            expect(result.diagnostics.getErrors().length).toBeGreaterThan(0);
+        });
+    });
+});
