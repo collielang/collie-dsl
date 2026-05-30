@@ -286,7 +286,8 @@ export type Expression =
     | IndexExpression
     | CallExpression
     | TernaryExpression
-    | GroupExpression;
+    | GroupExpression
+    | ErrorNode;
 
 // ============================================================
 // 错误节点
