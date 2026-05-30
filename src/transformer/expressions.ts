@@ -5,6 +5,7 @@ import {
     CallExpression, MemberAccessExpression, IndexExpression,
     TernaryExpression, GroupExpression, ErrorNode,
 } from '../parser/ast';
+import { mapBuiltinFunction, isBuiltin, isConstructorCall } from './stdlib';
 
 /**
  * 表达式转换器 — Collie 表达式 → TypeScript 代码
@@ -109,9 +110,22 @@ export class ExpressionTransformer {
     }
 
     private transformCallExpression(node: CallExpression): string {
-        const callee = this.transform(node.callee);
         const args = node.arguments.map(a => this.transform(a)).join(', ');
-        return `${callee}(${args})`;
+
+        // 检查是否为 Collie 内置函数调用
+        let calleeStr: string;
+        if (node.callee.kind === 'Identifier' && isBuiltin(node.callee.name)) {
+            const mapped = mapBuiltinFunction(node.callee.name);
+            if (isConstructorCall(node.callee.name)) {
+                calleeStr = `new ${mapped}`;
+            } else {
+                calleeStr = mapped;
+            }
+        } else {
+            calleeStr = this.transform(node.callee);
+        }
+
+        return `${calleeStr}(${args})`;
     }
 
     private transformMemberAccess(node: MemberAccessExpression): string {
