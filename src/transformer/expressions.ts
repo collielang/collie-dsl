@@ -1,0 +1,142 @@
+import {
+    Expression, NumberLiteral, StringLiteral, MultiLineStringLiteral,
+    CharLiteral, BooleanLiteral, NullLiteral, Identifier,
+    BinaryExpression, UnaryExpression, AssignmentExpression,
+    CallExpression, MemberAccessExpression, IndexExpression,
+    TernaryExpression, GroupExpression, ErrorNode,
+} from '../parser/ast';
+
+/**
+ * 表达式转换器 — Collie 表达式 → TypeScript 代码
+ */
+export class ExpressionTransformer {
+    transform(node: Expression): string {
+        if (node.kind === 'ErrorNode') {
+            return this.transformErrorNode(node as ErrorNode);
+        }
+
+        switch (node.kind) {
+            case 'NumberLiteral':
+                return this.transformNumberLiteral(node as NumberLiteral);
+            case 'StringLiteral':
+                return this.transformStringLiteral(node as StringLiteral);
+            case 'MultiLineStringLiteral':
+                return this.transformMultiLineString(node as MultiLineStringLiteral);
+            case 'CharLiteral':
+                return this.transformCharLiteral(node as CharLiteral);
+            case 'BooleanLiteral':
+                return this.transformBooleanLiteral(node as BooleanLiteral);
+            case 'NullLiteral':
+                return this.transformNullLiteral(node as NullLiteral);
+            case 'Identifier':
+                return this.transformIdentifier(node as Identifier);
+            case 'BinaryExpression':
+                return this.transformBinaryExpression(node as BinaryExpression);
+            case 'UnaryExpression':
+                return this.transformUnaryExpression(node as UnaryExpression);
+            case 'AssignmentExpression':
+                return this.transformAssignmentExpression(node as AssignmentExpression);
+            case 'CallExpression':
+                return this.transformCallExpression(node as CallExpression);
+            case 'MemberAccessExpression':
+                return this.transformMemberAccess(node as MemberAccessExpression);
+            case 'IndexExpression':
+                return this.transformIndexExpression(node as IndexExpression);
+            case 'TernaryExpression':
+                return this.transformTernaryExpression(node as TernaryExpression);
+            case 'GroupExpression':
+                return this.transformGroupExpression(node as GroupExpression);
+            default:
+                return `/* TODO: ${(node as any).kind} */ null`;
+        }
+    }
+
+    private transformNumberLiteral(node: NumberLiteral): string {
+        return node.value;
+    }
+
+    private transformStringLiteral(node: StringLiteral): string {
+        // Collie 双引号字符串 → TypeScript 双引号字符串
+        // value 字段已经包含转义处理后的内容
+        return `"${node.value}"`;
+    }
+
+    private transformMultiLineString(node: MultiLineStringLiteral): string {
+        // 多行字符串 → TypeScript 模板字面量
+        return '`' + node.value + '`';
+    }
+
+    private transformCharLiteral(node: CharLiteral): string {
+        // char → TypeScript string (单字符)
+        return `"${node.value}"`;
+    }
+
+    private transformBooleanLiteral(node: BooleanLiteral): string {
+        return node.value ? 'true' : 'false';
+    }
+
+    private transformNullLiteral(_node: NullLiteral): string {
+        return 'null';
+    }
+
+    private transformIdentifier(node: Identifier): string {
+        return node.name;
+    }
+
+    private transformBinaryExpression(node: BinaryExpression): string {
+        const left = this.transform(node.left);
+        const right = this.transform(node.right);
+
+        // 处理 Collie ==? (严格相等) 和 == (值相等)
+        let op = node.operator;
+
+        return `${left} ${op} ${right}`;
+    }
+
+    private transformUnaryExpression(node: UnaryExpression): string {
+        const operand = this.transform(node.operand);
+        if (node.isPrefix) {
+            return `${node.operator}${operand}`;
+        } else {
+            return `${operand}${node.operator}`;
+        }
+    }
+
+    private transformAssignmentExpression(node: AssignmentExpression): string {
+        const left = this.transform(node.left);
+        const right = this.transform(node.right);
+        return `${left} ${node.operator} ${right}`;
+    }
+
+    private transformCallExpression(node: CallExpression): string {
+        const callee = this.transform(node.callee);
+        const args = node.arguments.map(a => this.transform(a)).join(', ');
+        return `${callee}(${args})`;
+    }
+
+    private transformMemberAccess(node: MemberAccessExpression): string {
+        const obj = this.transform(node.object);
+        return `${obj}.${node.member.name}`;
+    }
+
+    private transformIndexExpression(node: IndexExpression): string {
+        const obj = this.transform(node.object);
+        const idx = this.transform(node.index);
+        return `${obj}[${idx}]`;
+    }
+
+    private transformTernaryExpression(node: TernaryExpression): string {
+        const cond = this.transform(node.condition);
+        const trueBr = this.transform(node.trueBranch);
+        const falseBr = this.transform(node.falseBranch);
+        return `${cond} ? ${trueBr} : ${falseBr}`;
+    }
+
+    private transformGroupExpression(node: GroupExpression): string {
+        return `(${this.transform(node.expression)})`;
+    }
+
+    private transformErrorNode(node: ErrorNode): string {
+        return `/* ERROR: ${node.message} */ null`;
+    }
+}
