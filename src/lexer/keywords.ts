@@ -27,6 +27,7 @@ export const KEYWORDS: Map<string, TokenType> = new Map([
     ['unset', TokenType.Unset],
 
     // 复合关键字
+    ['in', TokenType.In],
     ['Tuple', TokenType.Tuple],
     ['enum', TokenType.Enum],
     ['assert', TokenType.Assert],

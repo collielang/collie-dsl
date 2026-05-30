@@ -218,6 +218,7 @@ function isKeyword(type: TokenType): boolean {
         type === TokenType.Default ||
         type === TokenType.True || type === TokenType.False ||
         type === TokenType.Null || type === TokenType.Unset ||
+        type === TokenType.In ||
         type === TokenType.Tuple || type === TokenType.Enum ||
         type === TokenType.Assert || type === TokenType.New ||
         type === TokenType.Class || type === TokenType.Extends ||
