@@ -1,5 +1,6 @@
 import {
-    Statement, Expression, VariableDeclaration, IfStatement, WhileStatement,
+    Statement, Expression, VariableDeclaration, MultiVariableDeclaration,
+    IfStatement, WhileStatement,
     DoWhileStatement, ForStatement, ReturnStatement, BreakStatement,
     ContinueStatement, ExpressionStatement, BlockStatement,
     IdentifierType, ErrorNode, AssignmentExpression,
@@ -14,11 +15,13 @@ export class StatementTransformer {
     private indent: number;
     private exprTransformer: ExpressionTransformer;
     private transformDeclFn: ((decl: any) => string) | null;
+    private multiTempCounter: number;
 
     constructor() {
         this.indent = 0;
         this.exprTransformer = new ExpressionTransformer();
         this.transformDeclFn = null;
+        this.multiTempCounter = 0;
     }
 
     setDeclTransformer(fn: (decl: any) => string): void {
@@ -41,6 +44,8 @@ export class StatementTransformer {
         switch (node.kind) {
             case 'VariableDeclaration':
                 return this.transformVariableDeclaration(node as VariableDeclaration);
+            case 'MultiVariableDeclaration':
+                return this.transformMultiVariableDeclaration(node as MultiVariableDeclaration);
             case 'FunctionDeclaration':
                 if (this.transformDeclFn) {
                     return this.transformDeclFn(node);
@@ -83,6 +88,30 @@ export class StatementTransformer {
             // var → TypeScript 类型推断
             return `${this.ind()}let ${name} = ${init};`;
         }
+    }
+
+    /**
+     * 多变量声明: TypeName id1, id2, ... = expr;
+     * 编译为: const _multi0 = expr; let id1 = _multi0[0]; let id2 = _multi0[1];
+     */
+    private transformMultiVariableDeclaration(node: MultiVariableDeclaration): string {
+        const tsType = mapType((node.varType as IdentifierType).name);
+        const init = this.exprTransformer.transform(node.initializer);
+        const tempVar = `_multi${this.multiTempCounter++}`;
+
+        const lines: string[] = [];
+        const ind = this.ind();
+
+        // const _multiN = expr;
+        lines.push(`${ind}const ${tempVar} = ${init};`);
+
+        // let name1: type = _multiN[0]; ...
+        for (let i = 0; i < node.names.length; i++) {
+            const name = node.names[i].name;
+            lines.push(`${ind}let ${name}: ${tsType} = ${tempVar}[${i}];`);
+        }
+
+        return lines.join('\n');
     }
 
     /**
