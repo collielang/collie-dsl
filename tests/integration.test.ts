@@ -244,21 +244,39 @@ if (x > 0) {
     });
 
     describe('Phase 2: Enum', () => {
-        it('基本枚举', () => {
+        it('基本枚举 — 编译为 const 对象 + type 别名', () => {
             const source = `enum Season { Spring, Summer, Autumn, Winter }`;
             const result = compile(source);
             expect(result.success).toBe(true);
-            expect(result.code).toContain('enum Season {');
-            expect(result.code).toContain('Spring');
-            expect(result.code).toContain('Summer');
+            // const 对象模式
+            expect(result.code).toContain('const Season = {');
+            expect(result.code).toContain('Spring: 0');
+            expect(result.code).toContain('Summer: 1');
+            expect(result.code).toContain('Autumn: 2');
+            expect(result.code).toContain('Winter: 3');
+            expect(result.code).toContain('} as const;');
+            // type 别名
+            expect(result.code).toContain('type Season = (typeof Season)[keyof typeof Season];');
         });
 
         it('枚举成员带值', () => {
             const source = `enum Code { A = 1, B = 2 }`;
             const result = compile(source);
             expect(result.success).toBe(true);
-            expect(result.code).toContain('A = 1');
-            expect(result.code).toContain('B = 2');
+            expect(result.code).toContain('const Code = {');
+            expect(result.code).toContain('A: 1');
+            expect(result.code).toContain('B: 2');
+            expect(result.code).toContain('} as const;');
+            expect(result.code).toContain('type Code = (typeof Code)[keyof typeof Code];');
+        });
+
+        it('枚举成员混合自动递增和显式值', () => {
+            const source = `enum Mixed { A, B = 10, C }`;
+            const result = compile(source);
+            expect(result.success).toBe(true);
+            expect(result.code).toContain('A: 0');
+            expect(result.code).toContain('B: 10');
+            expect(result.code).toContain('C: 11');
         });
     });
 

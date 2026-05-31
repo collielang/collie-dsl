@@ -163,12 +163,15 @@ add(1, 2)
 ### 枚举 (Phase 2)
 
 ```collie
-// 简单枚举
+// 简单枚举 — 编译为 const 对象 + type 别名（兼容 Node.js v24 类型擦除）
 enum Season { Spring, Summer, Autumn, Winter }
+// 编译为 → const Season = { Spring: 0, Summer: 1, Autumn: 2, Winter: 3 } as const;
+//           type Season = (typeof Season)[keyof typeof Season];
 
 // 带值枚举
 enum Code { A = 1, B = 2, C = 3 }
-// 编译为 → enum Code { A = 1, B = 2, C = 3 }
+// 编译为 → const Code = { A: 1, B: 2, C: 3 } as const;
+//           type Code = (typeof Code)[keyof typeof Code];
 ```
 
 ### Tribool 三态布尔 (Phase 2)
