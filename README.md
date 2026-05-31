@@ -3,7 +3,7 @@
 **牧羊犬编程语言** — 一种编译到 TypeScript 的领域特定语言。
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4+-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-89%20passed-brightgreen.svg)](https://github.com)
+[![Tests](https://img.shields.io/badge/tests-102%20passed-brightgreen.svg)](https://github.com)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 Collie 是一门静态类型的编程语言，拥有丰富的基类型系统。编译器将 Collie 源码 (`.cl`) 编译为 TypeScript 代码 (.ts)，采用纯手写递归下降 + Pratt 解析器实现，不依赖任何解析器生成工具。
@@ -160,6 +160,43 @@ obj.field
 add(1, 2)
 ```
 
+### 枚举 (Phase 2)
+
+```collie
+// 简单枚举
+enum Season { Spring, Summer, Autumn, Winter }
+
+// 带值枚举
+enum Code { A = 1, B = 2, C = 3 }
+// 编译为 → enum Code { A = 1, B = 2, C = 3 }
+```
+
+### Tribool 三态布尔 (Phase 2)
+
+```collie
+// tribool 三态布尔: true / false / unset
+tribool flag = true;
+tribool state = unset;   // 编译为 → undefined
+tribool isReady = false;
+// 编译为 → let flag: boolean | undefined = true;
+```
+
+### Tuple 命名元组 (Phase 2)
+
+```collie
+// Tuple 类型 + 字面量
+Tuple person = (name: "Alice", age: 18);
+// 编译为 → let person: object = { name: "Alice", age: 18 };
+```
+
+### Spread 展开运算符 (Phase 2)
+
+```collie
+// 展开运算符 ...
+var copy = ...source;
+// 编译为 → let copy = ...source;
+```
+
 ---
 
 ## 编译器架构
@@ -223,8 +260,8 @@ collie-dsl/
 │       └── decimal.ts         # Decimal 类型支持
 ├── tests/
 │   ├── lexer/lexer.test.ts    # 词法测试 (41 用例)
-│   ├── parser/parser.test.ts  # 语法测试 (20 用例)
-│   └── integration.test.ts   # 集成测试 (20 用例)
+│   ├── parser/parser.test.ts  # 语法测试 (27 用例)
+│   └── integration.test.ts   # 集成测试 (34 用例)
 ├── examples/
 │   ├── hello.cl / factorial.cl / fibonacci.cl / fizzbuzz.cl    # 经典示例
 │   ├── variables.cl       # 变量声明
@@ -233,7 +270,11 @@ collie-dsl/
 │   ├── expressions.cl     # 表达式
 │   ├── operators.cl       # 全部运算符
 │   ├── multiway-eq.cl     # ==? 多路匹配
-│   └── type-conversion.cl # 类型转换
+│   ├── type-conversion.cl # 类型转换
+│   ├── enum.cl            # 枚举 (Phase 2)
+│   ├── tribool.cl         # 三态布尔 (Phase 2)
+│   ├── tuple.cl           # 命名元组 (Phase 2)
+│   └── spread.cl          # 展开运算符 (Phase 2)
 ├── package.json
 └── tsconfig.json
 ```
@@ -252,9 +293,10 @@ npx jest tests/parser/parser.test.ts --no-coverage
 npx jest tests/integration.test.ts --no-coverage
 ```
 
-测试覆盖：**89 个用例全部通过**:
+测试覆盖：**102 个用例全部通过**:
 - Lexer: 41 用例 (Token 生成、关键字、字面量、注释、位置追踪、错误恢复)
-- Parser: 20 用例 (变量声明、函数声明、控制流、表达式、错误恢复)
+- Parser: 27 用例 (变量声明、函数声明、控制流、表达式、错误恢复、枚举、Tribool、Tuple、Spread)
+- 集成: 34 用例 (端到端编译、完整程序、错误处理、Phase 2 新特性)
 - 集成: 28 用例 (端到端编译、完整程序、错误处理)
 
 ---
@@ -293,7 +335,7 @@ npx jest tests/integration.test.ts --no-coverage
 
 - [x] Phase 1: 基础类型、变量、函数、控制流
 - [x] Phase 2: 位运算 (`&` `|` `^` `~` `<<` `>>`)、`==?` 多路匹配、自增自减、复合赋值
-- [ ] Phase 2 (进行中): 枚举、Tribool、Tuple、展开运算符 `...`
+- [x] Phase 2: 枚举、Tribool、Tuple、展开运算符 `...`
 - [ ] Phase 3: 类、继承、接口、泛型
 - [ ] LSP 语言服务器
 - [ ] VS Code 插件
