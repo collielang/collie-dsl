@@ -1,6 +1,7 @@
 function main() {
+    let msg: string = "ABC";
+    console.log(...msg);
     let x = 42;
-    let y = ...x;
-    console.log("spread 编译完成");
+    console.log(String(x));
 }
 main();
