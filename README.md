@@ -3,8 +3,8 @@
 **牧羊犬编程语言** — 一种编译到 TypeScript 的领域特定语言。
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4+-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-102%20passed-brightgreen.svg)](https://github.com)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-102%20passed-brightgreen.svg)](examples/)
+[![License](https://img.shields.io/badge/license-BSD--3--Clause-green.svg)](LICENSE)
 
 Collie 是一门静态类型的编程语言，拥有丰富的基类型系统。编译器将 Collie 源码 (`.cl`) 编译为 TypeScript 代码 (.ts)，采用纯手写递归下降 + Pratt 解析器实现，不依赖任何解析器生成工具。
 
