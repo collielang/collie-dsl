@@ -179,9 +179,9 @@ enum Code { A = 1, B = 2, C = 3 }
 ```collie
 // tribool 三态布尔: true / false / unset
 tribool flag = true;
-tribool state = unset;   // 编译为 → undefined
+tribool state = unset;   // 编译为 → 'unset'
 tribool isReady = false;
-// 编译为 → let flag: boolean | undefined = true;
+// 编译为 → let flag: boolean | 'unset' = true;
 ```
 
 ### Tuple 命名元组 (Phase 2)

@@ -281,16 +281,16 @@ if (x > 0) {
     });
 
     describe('Phase 2: Tribool', () => {
-        it('tribool 类型 → boolean | undefined', () => {
+        it("tribool 类型 → boolean | 'unset'", () => {
             const result = compile('tribool t = true;');
             expect(result.success).toBe(true);
-            expect(result.code).toContain('let t: boolean | undefined = true');
+            expect(result.code).toContain("let t: boolean | 'unset' = true");
         });
 
-        it('unset → undefined', () => {
+        it("unset → 'unset'", () => {
             const result = compile('tribool t = unset;');
             expect(result.success).toBe(true);
-            expect(result.code).toContain('let t: boolean | undefined = undefined');
+            expect(result.code).toContain("let t: boolean | 'unset' = 'unset'");
         });
     });
 

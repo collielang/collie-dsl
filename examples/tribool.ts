@@ -1,9 +1,21 @@
-let active: boolean | undefined = true;
-let pending: boolean | undefined = false;
-let unknown: boolean | undefined = undefined;
+let active: boolean | 'unset' = true;
+let pending: boolean | 'unset' = false;
+let unknown: boolean | 'unset' = 'unset';
+function check(value: boolean | 'unset') {
+    if (value === 'unset') {
+        console.log("  state: unset");
+    } else if (value) {
+        console.log("  state: true");
+    } else {
+        console.log("  state: false");
+    }
+}
 function main() {
-    console.log("active = " + String(Boolean(active)));
-    console.log("pending = " + String(Boolean(pending)));
-    console.log("unknown is unset");
+    console.log("active:");
+    check(active);
+    console.log("pending:");
+    check(pending);
+    console.log("unknown:");
+    check(unknown);
 }
 main();

@@ -32,7 +32,7 @@ export class ExpressionTransformer {
             case 'NullLiteral':
                 return this.transformNullLiteral(node as NullLiteral);
             case 'UnsetLiteral':
-                return 'undefined';
+                return "'unset'";
             case 'Identifier':
                 return this.transformIdentifier(node as Identifier);
             case 'BinaryExpression':

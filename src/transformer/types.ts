@@ -11,7 +11,7 @@
  *   bool      → boolean
  *   object    → object
  *   none      → void
- *   tribool   → boolean | undefined  (Phase 2)
+ *   tribool   → boolean | 'unset'  (Phase 2)
  *   Tuple     → object  (Phase 2)
  */
 
@@ -27,7 +27,7 @@ const TYPE_MAP: Record<string, string> = {
     'none': 'void',
     'float': 'number',
     'double': 'number',
-    'tribool': 'boolean | undefined',
+    'tribool': "boolean | 'unset'",
     'Tuple': 'object',
 };
 
